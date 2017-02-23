@@ -6,7 +6,7 @@ n<-round(runif(1,35,1234),0)
 xbar<-round(runif(1,-5,200),1)
 SE <- sd/sqrt(n)
 ## simulated population mean
-hyp_mu <- round(xbar + (round(runif(1, -3.8, 3.8), 2) * SE), 2)
+hyp_mu <- round(xbar + (round(runif(1, -4, 4), 2) * SE), 2)
 
 ## choosing random confidence level (90, 95 and 99 %)
 alpha <- if(runif(1,0,1)<0.3) 0.10 else {
@@ -34,7 +34,7 @@ shinyServer(function(input, output, session){
     v$n<-round(runif(1,35,1234),0)
     v$xbar<-round(runif(1,-5,200),1)
     v$SE <- v$sd/sqrt(v$n)
-    v$hyp_mu <- round(v$xbar + (round(runif(1, -10, 10), 2) * v$SE), 2)
+    v$hyp_mu <- round(v$xbar + (round(runif(1, -4, 4), 2) * v$SE), 2)
     
     v$alpha <- if(runif(1,0,1)<0.3) 0.10 else {
       if(runif(1,0,1)<0.5) 0.05 else 0.01
@@ -46,8 +46,9 @@ shinyServer(function(input, output, session){
     C_upper  <- qnorm((v$alpha)/2+(1 - (v$alpha/2)),v$xbar,v$sd/sqrt(v$n))
     p <- 1 - pnorm(abs((v$xbar - v$hyp_mu)/v$SE))
     
-    if ((p > v$alpha/2 & input$accept_reject == 1)|
-        (p <= v$alpha/2 & input$accept_reject == 2)){
+    if (((p > v$alpha/2 & input$accept_reject == 1)|
+        (p <= v$alpha/2 & input$accept_reject == 2))
+        & (input$p_value < p + 0.001 & input$p_value > p - 0.001)){
       v$cor_inc <- "Correct!"
       v$correct <- v$correct + 1
     }
