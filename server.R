@@ -8,9 +8,9 @@ SE <- sd/sqrt(n)
 ## simulated population mean
 hyp_mu <- round(xbar + (round(runif(1, -4, 4), 2) * SE), 2)
 
-## choosing random confidence level (90, 95 and 99 %)
+## choosing random value of alpha (0.10, 0.05 or 0.01)
 alpha <- if(runif(1,0,1)<0.3) 0.10 else {
-  if(runif(1,0,1)<0.05) 0.95 else 0.01
+  if(runif(1,0,1)<0.05) 0.05 else 0.01
 }
 
 ## I just initiated the reactive values outside of the shiny server before the write_question 
@@ -36,8 +36,8 @@ shinyServer(function(input, output, session){
     v$SE <- v$sd/sqrt(v$n)
     v$hyp_mu <- round(v$xbar + (round(runif(1, -4, 4), 2) * v$SE), 2)
     
-    v$alpha <- if(runif(1,0,1)<0.3) 0.10 else {
-      if(runif(1,0,1)<0.5) 0.05 else 0.01
+    v$alpha <- if(runif(1,0,1)<0.25) 0.10 else {
+      if(runif(1,0,1)<0.67) 0.05 else 0.01
     }
   })
   
@@ -58,10 +58,16 @@ shinyServer(function(input, output, session){
     }
   })
   
-  
-  output$Question <- renderText(paste("You collect a sample of ",v$n," observations from a population with standard deviation of ",v$sd,". The value of the sample mean is ",v$xbar,". Test the following null hypothesis with alpha = ",v$alpha,sep=""))
-  output$Hypothesis <- renderText(paste("Null Hypothesis", ":" ," mu = ", v$hyp_mu))
-  output$Conf_int <- renderText(paste("CI: (", v$xbar + (qnorm(v$alpha/2))*v$SE, ", ", v$xbar + (qnorm(1 - v$alpha/2))*v$SE, ")", "  P-value: ", 1 - pnorm(abs((v$xbar - v$hyp_mu)/v$SE))))
+  ## 
+  output$Question <- renderText(paste("You collect a sample of ",v$n," observations from a population with standard deviation of ",v$sd,". The value of the sample mean is ",v$xbar,". Test the following null hypothesis with alpha-level = ",v$alpha, sep=""))
+  ##output$NullHypothesis <- renderText(withMathJax(helpText("$$H_0: \\mu = $$")))
+  output$NullHypothesis <- renderUI({
+    withMathJax(helpText(paste('$$H_0: \\mu = ', v$hyp_mu, '$$')))
+  })
+  output$AltHypothesis <- renderUI({
+    withMathJax(helpText(paste("$$H_a: \\mu \\not= \\", v$hyp_mu, "$$")))
+  })
+  ## output$Conf_int <- renderText(paste("CI: (", v$xbar + (qnorm(v$alpha/2))*v$SE, ", ", v$xbar + (qnorm(1 - v$alpha/2))*v$SE, ")", "  P-value: ", 1 - pnorm(abs((v$xbar - v$hyp_mu)/v$SE))))
   output$ci <- renderText(v$cor_inc)
   output$cor <- renderText(paste("Correct: ", v$correct))
   output$incor <- renderText(paste("Incorrect: ", v$incorrect))
