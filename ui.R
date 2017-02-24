@@ -11,8 +11,7 @@ shinyUI(fluidPage(theme = shinytheme("lumen"),
   hr(),
   h4("Question:"),
   withMathJax(textOutput("Question")),
-  uiOutput("NullHypothesis"),
-  uiOutput("AltHypothesis"),
+  uiOutput("Hypothesis"),
   withMathJax(textOutput("test")),
   textOutput("Conf_int"),
   hr(),
@@ -27,6 +26,7 @@ shinyUI(fluidPage(theme = shinytheme("lumen"),
   mainPanel(
     h4(textOutput("ci")),
     h5(textOutput("cor")),
-    h5(textOutput("incor"))
+    h5(textOutput("incor")),
+    plotOutput("vis", width = "100%", height = "400px")
   )
 ))

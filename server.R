@@ -13,6 +13,31 @@ alpha <- if(runif(1,0,1)<0.3) 0.10 else {
   if(runif(1,0,1)<0.05) 0.05 else 0.01
 }
 
+## defining the plot function for feedback once the students answer
+normal_plot_hyp <- function(mean, se, alpha = 0.05, sample_mean, two_tailed = TRUE) {
+  ## finding the x and y coordinates for plotting
+  x <- seq(-4,4,length=1000)*se + mean
+  hx <- dnorm(x,mean,se)
+  
+  ## plot
+  plot(x, hx, type="n", xlab="Sample mean given H0", ylab="", axes=FALSE)
+  
+  ub <- mean + (qnorm(p = 1 - (alpha/2))) * se
+  lb <- mean - (qnorm(p = 1 - (alpha/2))) * se
+  i_low <- x <= lb 
+  i_high <- x > ub
+  lines(x, hx)
+  polygon(c(lb,x[i_low]), c(0,hx[i_low]), col=rgb(0.8,0.8,0.8, alpha = 0.75)) 
+  polygon(c(ub,x[i_high]), c(0,hx[i_high]), col=rgb(0.8,0.8,0.8, alpha = 0.75)) 
+  abline(v = sample_mean, lty = 2)
+  p_val <- 1 - pnorm(abs((sample_mean - mean)/se))
+  
+  p_val_txt <- paste("P-value = ", round(p_val, 3))
+  result <- paste(p_val_txt)
+  mtext(result,3)
+  axis(1, at=seq(mean - (4 * se), mean + ( 4 * se), se), pos=0)
+}
+
 ## I just initiated the reactive values outside of the shiny server before the write_question 
 ## because I believe it makes use of the reactive values
 v <- reactiveValues(cor_inc = "", 
@@ -53,22 +78,25 @@ shinyServer(function(input, output, session){
       v$correct <- v$correct + 1
     }
     else{
-      v$cor_inc <- "Incorrect! Please try again"
+      v$cor_inc <- "Incorrect! Please try again. (Look at the figure below for a clue)"
       v$incorrect <- v$incorrect + 1
     }
+    
+    output$vis <- renderPlot(normal_plot_hyp(mean = v$hyp_mu, se = v$SE, sample_mean = v$xbar, alpha = v$alpha))
   })
   
   ## 
   output$Question <- renderText(paste("You collect a sample of ",v$n," observations from a population with standard deviation of ",v$sd,". The value of the sample mean is ",v$xbar,". Test the following null hypothesis with alpha-level = ",v$alpha, sep=""))
   ##output$NullHypothesis <- renderText(withMathJax(helpText("$$H_0: \\mu = $$")))
-  output$NullHypothesis <- renderUI({
-    withMathJax(helpText(paste('$$H_0: \\mu = ', v$hyp_mu, '$$')))
+  output$Hypothesis <- renderUI({
+    withMathJax(helpText(paste('$$H_0: \\mu = \\', v$hyp_mu, '$$', "$$H_a: \\mu \\not= \\", v$hyp_mu, "$$")))
   })
-  output$AltHypothesis <- renderUI({
-    withMathJax(helpText(paste("$$H_a: \\mu \\not= \\", v$hyp_mu, "$$")))
-  })
+  
+  ## commenting out the following line - To check if the test bank works correctly
   ## output$Conf_int <- renderText(paste("CI: (", v$xbar + (qnorm(v$alpha/2))*v$SE, ", ", v$xbar + (qnorm(1 - v$alpha/2))*v$SE, ")", "  P-value: ", 1 - pnorm(abs((v$xbar - v$hyp_mu)/v$SE))))
+  
   output$ci <- renderText(v$cor_inc)
   output$cor <- renderText(paste("Correct: ", v$correct))
   output$incor <- renderText(paste("Incorrect: ", v$incorrect))
+  
 })
