@@ -1,4 +1,3 @@
-library(shiny)
 library(shinythemes)
 
 ## I just rearranged the UI a little bit
@@ -7,7 +6,7 @@ shinyUI(fluidPage(theme = shinytheme("lumen"),
   h3("Unlimited Test Bank - Hypotheis Testing"),
   hr(),
   h4("Enter your answer below and click Answer to check it"),
-  h4("or click Next Problem for a new question"),
+  h4("or click next Problem for a new question"),
   hr(),
   h4("Question:"),
   withMathJax(textOutput("Question")),
