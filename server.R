@@ -37,7 +37,7 @@ normal_plot_hyp <- function(mean, se, alpha = 0.05, sample_mean, test_type = "2t
   hx <- dnorm(x,mean,se)
   
   ## plot
-  plot(x, hx, type="n", xlab=expression("Sample mean given H"[0]), ylab="", axes=FALSE)
+  plot(x, hx, type="n", xlab=expression("Sampling distribution of Sample mean given H"[0]), ylab="", axes=FALSE)
   lines(x, hx)
   
   if (test_type == "2t"){
@@ -60,6 +60,7 @@ normal_plot_hyp <- function(mean, se, alpha = 0.05, sample_mean, test_type = "2t
   }
   
   abline(v = sample_mean, lty = 2)
+  legend("topright", legend = "observed sample mean", lty = 2, cex = 0.8)
   
   if (test_type == "2t"){
     p_val <- 1 - pnorm(abs((sample_mean - mean)/se))
@@ -138,7 +139,7 @@ shinyServer(function(input, output, session){
       if (v$test_type == "1tl"){
         p <- pnorm((v$xbar - v$hyp_mu)/v$SE)
       } else {
-        p <- pnorm((v$xbar - v$hyp_mu)/v$SE)
+        p <- 1 - pnorm((v$xbar - v$hyp_mu)/v$SE)
       }
     }
     
@@ -158,7 +159,8 @@ shinyServer(function(input, output, session){
   
   output$Question <- renderText(paste("You collect a sample of ",v$n," observations from a population with standard deviation of ",v$sd,". The value of the sample mean is ",v$xbar,". Test the following null hypothesis with alpha-level = ",v$alpha, sep=""))
   output$Hypothesis <- renderUI({withMathJax(helpText(paste('$$H_0: \\mu', v$test_sgn_null, v$hyp_mu, '$$', '$$H_a: \\mu', v$test_sgn_alt, v$hyp_mu, '$$')))})
-  output$Conf_int <- renderText(paste("CI: (", v$xbar + (qnorm(v$alpha/2))*v$SE, ", ", v$xbar + (qnorm(1 - v$alpha/2))*v$SE, ")", " Test Type: ", v$test_type))
+  ## CI , p value to debug and troubleshoot
+  ## output$Conf_int <- renderText(paste("CI: (", v$xbar + (qnorm(v$alpha/2))*v$SE, ", ", v$xbar + (qnorm(1 - v$alpha/2))*v$SE, ")", " Test Type: ", v$test_type))
   
   output$ci <- renderText(v$cor_inc)
   output$cor <- renderText(paste("Correct: ", v$correct))
